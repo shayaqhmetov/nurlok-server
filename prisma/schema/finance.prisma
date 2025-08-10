@@ -1,0 +1,97 @@
+model Currency {
+  id        String    @id @default(cuid())
+  name      String
+  symbol    String
+  code      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  accounts  Account[]
+}
+
+model Account {
+  id            String        @id @default(cuid())
+  name          String
+  balance       Float         @default(0)
+  currency      Currency      @relation(fields: [currencyId], references: [id])
+  currencyId    String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  isDeposit     Boolean       @default(true)
+  percentage    Float         @default(0)
+  userId        String
+  transactions  Transaction[]
+  transfersFrom Transfer[]    @relation("transferFrom")
+  transfersTo   Transfer[]    @relation("transferTo")
+  goals         Goal[]
+}
+
+enum TransactionDirection {
+  INCOMING
+  OUTGOING
+}
+
+model TransactionType {
+  id           String               @id @default(cuid())
+  direction    TransactionDirection
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  name        String
+  amount      Float
+  type        TransactionType @relation(fields: [typeId], references: [id])
+  typeId      String
+  description String?
+  date        DateTime        @default(now())
+  account     Account         @relation(fields: [accountId], references: [id])
+  accountId   String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  Category    Category?       @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+}
+
+model Transfer {
+  id            String   @id @default(cuid())
+  fromAccount   Account  @relation("transferFrom", fields: [fromAccountId], references: [id])
+  fromAccountId String
+  toAccount     Account  @relation("transferTo", fields: [toAccountId], references: [id])
+  toAccountId   String
+  amount        Float
+  createdAt     DateTime @default(now())
+  userId        String
+}
+
+model Budget {
+  id          String   @id @default(cuid())
+  name        String
+  amount      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  limitAmount Float
+  spentAmount Float
+}
+
+model Goal {
+  id            String   @id @default(cuid())
+  name          String
+  targetAmount  Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String
+  currentAmount Float
+  account       Account? @relation(fields: [accountId], references: [id])
+  accountId     String
+}
+

@@ -1,13 +1,34 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma, Account } from 'prisma/generated/prisma';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CurrencyService } from '../currency/currency.service';
+import { CreateAccountDto } from './dto/create-account.dto';
+import { Errors } from '../errors';
 
 @Injectable()
 export class AccountService {
-  constructor(@Inject(PrismaService) private prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private prisma: PrismaService,
+    protected readonly currencyService: CurrencyService,
+  ) {}
 
-  async createAccount(data: Prisma.AccountCreateInput): Promise<Account> {
-    return this.prisma.account.create({ data });
+  async createAccount(createAccountDto: CreateAccountDto): Promise<Account> {
+    const currency = await this.currencyService.findCurrencyByCode(
+      createAccountDto.currencyCode,
+    );
+
+    if (!currency)
+      throw Errors.NOT_FOUND('Currency', createAccountDto.currencyCode);
+
+    return this.prisma.account.create({
+      data: {
+        name: createAccountDto.name,
+        userId: createAccountDto.userId,
+        currency: {
+          connect: { id: currency.id },
+        },
+      },
+    });
   }
 
   async listAccounts(params: {

@@ -2,14 +2,15 @@ import { Body, Controller, Param, Query } from '@nestjs/common';
 import { Get, Put, Delete, Patch, Post } from '@nestjs/common/decorators/http';
 
 import { CurrencyService } from './currency.service';
+import { FindCurrencyDto } from './dto/find-currency.dto';
 import { CreateCurrencyDto } from './dto/create-currency.dto';
 
 @Controller('currencies')
 export class CurrencyController {
-  constructor(private readonly currencyService: CurrencyService) {}
+  constructor(private readonly currencyService: CurrencyService) { }
 
   @Get()
-  async findAll(@Query() query: any) {
+  async findAll(@Query() query: FindCurrencyDto) {
     return this.currencyService.listCurrencies(query);
   }
 

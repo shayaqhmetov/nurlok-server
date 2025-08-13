@@ -1,27 +1,31 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Prisma, Currency } from 'prisma/generated/prisma';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateCurrencyDto } from './dto/create-currency.dto';
+import { Prisma, Currency } from '@/../prisma/generated/prisma';
+
 import { Errors } from '../errors';
+import { FindCurrencyDto } from './dto/find-currency.dto';
+import { CreateCurrencyDto } from './dto/create-currency.dto';
 
 @Injectable()
 export class CurrencyService {
-  constructor(@Inject(PrismaService) private prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private prisma: PrismaService) { }
 
-  async listCurrencies(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.CurrencyWhereUniqueInput;
-    where?: Prisma.CurrencyWhereInput;
-    orderBy?: Prisma.CurrencyOrderByWithRelationInput;
-  }) {
-    const { skip, take, cursor, where, orderBy } = params;
+  async listCurrencies(params: FindCurrencyDto) {
+    const allowedOrderBy = ['code', 'name', 'symbol'];
+    const { limit, offset, orderBy, order } = params;
+    let orderByField = orderBy;
+    if (orderBy && !allowedOrderBy.includes(orderBy as string)) {
+      orderByField = 'name';
+    }
+    // convert orderBy to object
     return this.prisma.currency.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
+      skip: offset ? parseInt(offset as any, 10) : undefined,
+      take: limit ? parseInt(limit as any, 10) : undefined,
+      orderBy: orderByField
+        ? ({
+            [orderByField as any]: order,
+          } as Prisma.CurrencyOrderByWithRelationInput)
+        : undefined,
     });
   }
 

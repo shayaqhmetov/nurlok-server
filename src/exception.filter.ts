@@ -9,6 +9,7 @@ import {
 import { HttpAdapterHost } from '@nestjs/core';
 import { Prisma } from '../prisma/generated/prisma';
 import { ErrorMessages } from './finance/errors';
+import { PrismaClientValidationError } from '@/../prisma/generated/prisma/runtime/library';
 
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {
@@ -29,6 +30,13 @@ export class CatchEverythingFilter implements ExceptionFilter {
       path: httpAdapter.getRequestUrl(ctx.getRequest()),
       message: 'Internal server error',
     };
+
+    if (exception instanceof PrismaClientValidationError) {
+      const stack = exception.message.split('\n');
+      responseBody.message = stack[stack.length - 1];
+      // skip error throwing
+      return httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
+    }
 
     if (
       exception instanceof Prisma.PrismaClientKnownRequestError &&

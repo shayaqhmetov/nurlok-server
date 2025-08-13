@@ -1,5 +1,11 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+const { pathsToModuleNameMapper } = require('ts-jest');
+const { compilerOptions } = require('./tsconfig.json');
+
 module.exports = {
-  moduleNameMapper: {
-    '^prisma/(.*)$': '<rootDir>/prisma/$1',
-  },
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: '<rootDir>/', // ✅ remove extra src
+  }),
 };

@@ -12,7 +12,7 @@ describe('CurrencyController', () => {
         {
           provide: CurrencyService,
           useValue: mockCurrencyService,
-        }
+        },
       ],
       controllers: [CurrencyController],
     }).compile();
